@@ -12,20 +12,20 @@ if (!config.get("jwtPrivateKey")) {
   console.error("FATAL ERROR: jwtPrivateKey is not defined");
   process.exit(1);
 }
-if(process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI);
-  .then(() => console.log("Connected to soYum DB..."))
-  .catch(err =>
-    console.log("There was an error connecting to the soYum DB....", err)
-  );
- 
- }
- else {
-mongoose.connect("mongodb://localhost/soYum")
-  .then(() => console.log("Connected to soYum DB..."))
-  .catch(err =>
-    console.log("There was an error connecting to the soYum DB....", err)
-  );
+if (process.env.MONGODB_URI) {
+  mongoose
+    .connect(process.env.MONGODB_URI)
+    .then(() => console.log("Connected to soYum DB..."))
+    .catch(err =>
+      console.log("There was an error connecting to the soYum DB....", err)
+    );
+} else {
+  mongoose
+    .connect("mongodb://localhost/soYum")
+    .then(() => console.log("Connected to soYum DB..."))
+    .catch(err =>
+      console.log("There was an error connecting to the soYum DB....", err)
+    );
 }
 
 app.use(express.json()); //if there is json in the req it will populate req.body
