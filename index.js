@@ -7,6 +7,9 @@ const auth = require("./routes/auth");
 const allowCrossDomain = require("./middleware/allowCrossDomain");
 const app = express();
 const config = require("config");
+var dotenv = require("dotenv");
+
+dotenv.load();
 
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL ERROR: jwtPrivateKey is not defined");
@@ -27,9 +30,10 @@ if (process.env.MONGODB_URI) {
       console.log("There was an error connecting to the soYum DB....", err)
     );
 }
-
-app.use(express.json()); //if there is json in the req it will populate req.body
-app.use(express.urlencoded({ extended: true })); //parses a key=value format and will populate req.body
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb" }, { extended: true }));
+//app.use(express.json()); //if there is json in the req it will populate req.body
+//app.use(express.urlencoded({ extended: true })); //parses a key=value format and will populate req.body
 app.use(express.static("public")); //this allows us to serve static content (folder is called public)
 app.use(allowCrossDomain);
 app.use(helmet());

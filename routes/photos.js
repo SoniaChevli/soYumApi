@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const _ = require("lodash");
 const { photoSchema, Photo, validatePhoto } = require("../models/photo");
+var cloudinary = require("cloudinary").v2;
 
 const auth = require("../middleware/auth");
 
@@ -95,6 +96,21 @@ router.get("/user/:id", async (req, res) => {
 });
 
 router.post("/", auth, async (req, res) => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET
+  });
+  await cloudinary.uploader.upload(
+    req.body.photo,
+    { resource_type: "auto" },
+    function(err, image) {
+      if (err) {
+        console.warn(err);
+      } else req.body.photo = image.url;
+    }
+  );
+  console.log(req.body);
   const { error } = validatePhoto(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
