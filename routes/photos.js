@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const _ = require("lodash");
-const { photoSchema, Photo, validatePhoto } = require("../models/photo");
+const { Photo, validatePhoto } = require("../models/photo");
 var cloudinary = require("cloudinary").v2;
 
 const auth = require("../middleware/auth");
@@ -53,7 +53,6 @@ router.put("/favorite/:id", auth, async (req, res) => {
       let isInArray = selectedPhoto.favorites.some(function(userId, index) {
         return String(userId) === String(req.body.currentUserId);
       });
-      console.log("IS IN ARRAY", isInArray);
       if (isInArray) {
         selectedPhoto.favorites.some(function(userId, index) {
           if (String(userId) === String(req.body.currentUserId))
@@ -76,13 +75,11 @@ router.put("/favorite/:id", auth, async (req, res) => {
 });
 
 router.get("/favorites/user/:id", auth, async (req, res) => {
-  console.log("current user ", req.params.id);
   const photos = await Photo.find({
     favorites: { $in: mongoose.Types.ObjectId(req.params.id) }
   }).sort({ created_at: -1 });
   if (!photos)
     return res.status(404).send("The user with the given id was not found");
-  console.log(photos);
   res.send(photos);
 });
 
@@ -110,7 +107,7 @@ router.post("/", auth, async (req, res) => {
       } else req.body.photo = image.url;
     }
   );
-  console.log(req.body);
+
   const { error } = validatePhoto(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 

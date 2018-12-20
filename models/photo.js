@@ -47,8 +47,7 @@ function validatePhoto(photo) {
       .max(50)
       .required(),
     restaurantLink: Joi.string()
-      .min(1)
-      .max(50),
+    .max(50),
     author: Joi.object(),
     city: Joi.string().required(),
     description: Joi.string(),
