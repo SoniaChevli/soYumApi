@@ -102,7 +102,7 @@ router.post("/", auth, async (req, res) => {
 
   await cloudinary.uploader.upload(
     req.body.photo,
-    { resource_type: "auto", width: 500, height: 500, crop: "scale" },
+    { resource_type: "auto", width: 600, crop: "scale" },
     function(err, image) {
       if (err) {
         console.log(err);
