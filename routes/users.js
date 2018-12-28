@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { User, validateUser } = require("../models/user");
-const { Photo } = require("../models/photo");
+
 const auth = require("../middleware/auth");
 
 router.get("/me", auth, async (req, res) => {
@@ -10,8 +10,9 @@ router.get("/me", auth, async (req, res) => {
   res.send(user);
 });
 
+// Incomplete
 router.put("/me", auth, async (req, res) => {
-  console.log("req ", req.body);
+  //allow user to change user information
 });
 
 router.get("/", async (req, res) => {

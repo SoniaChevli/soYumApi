@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
-const jwt = require("jsonwebtoken");
-const config = require("config");
 
 const photoSchema = new mongoose.Schema({
   restaurantName: {
@@ -46,8 +44,7 @@ function validatePhoto(photo) {
       .min(1)
       .max(50)
       .required(),
-    restaurantLink: Joi.string()
-    .max(50),
+    restaurantLink: Joi.string().max(50),
     author: Joi.object(),
     city: Joi.string().required(),
     description: Joi.string(),
@@ -60,6 +57,5 @@ function validatePhoto(photo) {
 
 const Photo = mongoose.model("Photo", photoSchema);
 
-exports.photoSchema = photoSchema;
 exports.Photo = Photo;
 exports.validatePhoto = validatePhoto;

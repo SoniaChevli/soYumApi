@@ -1,30 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const _ = require("lodash");
 const { Photo, validatePhoto } = require("../models/photo");
-var cloudinary = require("cloudinary").v2;
-
+const cloudinary = require("cloudinary").v2;
 const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
-  let searchTags = req.query.tags;
+  let searchFilters = req.query.tags;
   let searchCity = req.query.city;
 
-  if (searchTags && searchCity) {
+  if (searchFilters && searchCity) {
     let photos = await Photo.find({
-      tags: { $all: searchTags }
+      tags: { $all: searchFilters }
     }).sort({ created_at: -1 });
-    photos = await photos.filter(
+    photos = photos.filter(
       c => c.city.toLowerCase() === searchCity.toLowerCase()
     );
     res.send(photos);
-  } else if (searchTags) {
+  } else if (searchFilters) {
     const photos = await Photo.find({
-      tags: { $all: searchTags }
+      tags: { $all: searchFilters }
     });
     res.send(photos);
   } else if (searchCity) {
+    // "i" means ignore case
     searchCity = new RegExp(searchCity, "i");
     const photos = await Photo.find({ city: searchCity }).sort({
       created_at: -1
@@ -48,7 +47,6 @@ router.put("/favorite/:id", auth, async (req, res) => {
     if (err) {
       return res.send(err);
     }
-
     if (selectedPhoto) {
       let isInArray = selectedPhoto.favorites.some(function(userId, index) {
         return String(userId) === String(req.body.currentUserId);
@@ -67,13 +65,13 @@ router.put("/favorite/:id", auth, async (req, res) => {
         if (err) {
           return res.send(err);
         }
-
         res.send({ message: "done" });
       });
     }
   });
 });
 
+//gets photos user with {:id} has favorited
 router.get("/favorites/user/:id", auth, async (req, res) => {
   const photos = await Photo.find({
     favorites: { $in: mongoose.Types.ObjectId(req.params.id) }
@@ -83,6 +81,7 @@ router.get("/favorites/user/:id", auth, async (req, res) => {
   res.send(photos);
 });
 
+//gets photos user with {:id} has uploaded
 router.get("/user/:id", async (req, res) => {
   const photos = await Photo.find({
     "author._id": req.params.id
@@ -92,18 +91,21 @@ router.get("/user/:id", async (req, res) => {
   res.send(photos);
 });
 
+// posts new photo
+// first upload to cloudinary then store cloudinary url in DB
 router.post("/", auth, async (req, res) => {
   cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
   });
+
   await cloudinary.uploader.upload(
     req.body.photo,
-    { resource_type: "auto" },
+    { resource_type: "auto", width: 500, height: 500, crop: "scale" },
     function(err, image) {
       if (err) {
-        console.warn(err);
+        console.log(err);
       } else req.body.photo = image.url;
     }
   );
@@ -121,12 +123,11 @@ router.post("/", auth, async (req, res) => {
     tags: req.body.tags,
     favorites: []
   });
-
   await photo.save();
-
   res.send(photo);
 });
 
+// deletes photos with {:id}
 router.delete("/:id", auth, async (req, res) => {
   let photo = await Photo.findById(req.params.id);
   if (!photo)
@@ -135,7 +136,7 @@ router.delete("/:id", auth, async (req, res) => {
     photo = await Photo.remove({ _id: req.params.id });
     res.send(photo);
   } catch (err) {
-    console.log("ERROR", err);
+    res.status(400).send({ error: "Something failed when deleting" });
   }
 });
 module.exports = router;
