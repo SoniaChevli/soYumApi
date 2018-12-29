@@ -100,13 +100,15 @@ router.post("/", auth, async (req, res) => {
     api_secret: process.env.API_SECRET
   });
 
-  cloudinary.uploader.upload(
+  await cloudinary.uploader.upload(
     req.body.photo,
     { resource_type: "auto", width: 600, crop: "scale" },
     function(err, image) {
       if (err) {
         console.log(err);
-      } else req.body.photo = image.url;
+      } else {
+        req.body.photo = image.url;
+      }
     }
   );
 

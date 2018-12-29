@@ -28,9 +28,9 @@ router.post("/", async (req, res) => {
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
   });
-  cloudinary.uploader.upload(
+  await cloudinary.uploader.upload(
     req.body.profilePhoto,
-    { resource_type: "auto" },
+    { resource_type: "auto", secure: true },
     function(err, image) {
       if (err) {
         console.warn(err);
