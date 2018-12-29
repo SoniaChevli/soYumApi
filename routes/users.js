@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { User, validateUser } = require("../models/user");
-
 const auth = require("../middleware/auth");
+const cloudinary = require("cloudinary").v2;
 
 router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
@@ -15,18 +15,20 @@ router.put("/me", auth, async (req, res) => {
   //allow user to change user information
 });
 
+//get all users
 router.get("/", async (req, res) => {
   const user = await User.find();
   res.send(user);
 });
 
+// create new user
 router.post("/", async (req, res) => {
   cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
   });
-  await cloudinary.uploader.upload(
+  cloudinary.uploader.upload(
     req.body.profilePhoto,
     { resource_type: "auto" },
     function(err, image) {
@@ -35,8 +37,10 @@ router.post("/", async (req, res) => {
       } else req.body.profilePhoto = image.url;
     }
   );
+
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+
   let user = await User.findOne({ email: req.body.email });
   if (user) return res.status(400).send("User already registered.");
 
